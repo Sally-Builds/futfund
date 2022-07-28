@@ -1,0 +1,11 @@
+.card {
+    @apply bg-white rounded-sm overflow-hidden shadow-md relative
+}
+
+.card-image {
+    @apply w-full h-52 object-cover
+}
+
+.badge {
+    @apply bg-primary rounded-full m-3 p-1 absolute top-0 left-0 cursor-pointer
+}
