@@ -41,7 +41,7 @@ export const isConnected = createAsyncThunk(
   }
 );
 
-export const adminAddress = createAsyncThunk(
+export const getAdminAddress = createAsyncThunk(
   "authSlice/adminAddress",
   async (data, thunkAPI) => {
     try {
@@ -88,11 +88,10 @@ const authSlice = createSlice({
         state.isLoggedIn = false;
       })
       //adminAddress builder
-      .addCase(adminAddress.fulfilled, (state, action) => {
-        console.log(action.payload);
+      .addCase(getAdminAddress.fulfilled, (state, action) => {
         state.adminAddress = action.payload;
       })
-      .addCase(adminAddress.rejected, (state) => {
+      .addCase(getAdminAddress.rejected, (state) => {
         state.adminAddress = false;
       });
   },

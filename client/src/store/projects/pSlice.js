@@ -29,12 +29,32 @@ export const getProjects = createAsyncThunk(
   }
 );
 
+export const createProject = createAsyncThunk(
+  "pSlice/createProject",
+  async (data, thunkAPI) => {
+    try {
+      console.log("enterd?");
+      const projects = await contract.createProject(data);
+      return projects;
+    } catch (error) {
+      console.log(error);
+      return thunkAPI.rejectWithValue(error);
+    }
+  }
+);
+
 const pSlice = createSlice({
   name: "pSlice",
   initialState,
   reducers: {
     updateProjects(state, action) {
-      state.projects = action.payload;
+      let projects = action.payload.map((el) => {
+        return {
+          ...el,
+          realizeAmt: contract.web3.utils.fromWei(el.realizeAmt, "ether"),
+        };
+      });
+      state.projects = projects;
     },
   },
   extraReducers: (builder) => {
@@ -48,6 +68,20 @@ const pSlice = createSlice({
       .addCase(getProjects.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = action.payload;
+      })
+      .addCase(createProject.pending, (state) => {
+        state.isLoading = true;
+        state.message = "";
+      })
+      .addCase(createProject.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.message = "successfully created";
+      })
+      .addCase(createProject.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
       });
   },
 });
@@ -62,7 +96,6 @@ export const projects = (state) => state.projects;
 export const upcomingProjects = (state) => {
   const projects = state.pSlice.projects;
   let upcoming = [];
-  console.log(projects);
   if (projects.length > 0) {
     projects.forEach((e) => {
       if (new Date() < new Date(e.startDate * 1000)) {

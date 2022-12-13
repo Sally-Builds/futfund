@@ -3,17 +3,17 @@ import { Doughnut } from "react-chartjs-2";
 
 const Douchart = ({ donations }) => {
   const data = {
-    // labels: ["Red", "Blue", "Yellow"],
     labels: donations.map((el) => el.projectName),
     datasets: [
       {
         label: "My First Dataset",
-        // data: [300, 50, 100],
         data: donations.map((el) => el.amount),
         backgroundColor: [
-          "rgb(255, 99, 132)",
-          "rgb(54, 162, 235)",
-          "rgb(255, 205, 86)",
+          "rgb(184, 225, 255)",
+          "rgb(226, 201, 245)",
+          "rgb(109, 72, 112)",
+          "rgb(130, 168, 250)",
+          "rgb(143, 79, 40)",
         ],
         hoverOffset: 4,
         borderWidth: 0.5,

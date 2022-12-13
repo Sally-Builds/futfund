@@ -1,17 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { MenuIcon, XIcon } from "@heroicons/react/outline";
 import { useDispatch, useSelector } from "react-redux";
-import { requestWallet, reset } from "../../store/auth/authSlice";
+import {
+  requestWallet,
+  reset,
+  getAdminAddress,
+} from "../../store/auth/authSlice";
 import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
 
 const Header = () => {
   const [hamburgerIcon, setHamburgerIcon] = useState(false);
+  const [myAddress, setMyAddress] = useState("");
+  const [myAdminAddress, setMyAdminAddress] = useState("");
   const handleHamburgerState = () => setHamburgerIcon(!hamburgerIcon);
   const dispatch = useDispatch();
-  const { message, isError, isSuccess, isLoading, isLoggedIn } = useSelector(
-    (state) => state.authSlice
-  );
+  const { message, isError, isSuccess, isLoading, isLoggedIn, adminAddress } =
+    useSelector((state) => state.authSlice);
 
   useEffect(() => {
     if (isError) {
@@ -21,7 +26,26 @@ const Header = () => {
       toast.success(message);
     }
     dispatch(reset());
-  }, [message, isError, isSuccess, isLoading, isLoggedIn, dispatch]);
+    dispatch(getAdminAddress());
+    if (isLoggedIn) {
+      setMyAddress(isLoggedIn.toLowerCase());
+    }
+    setMyAdminAddress(adminAddress.toLowerCase());
+    // console.log(myAddress);
+    // console.log(myAdminAddress);
+  }, [
+    message,
+    isError,
+    isSuccess,
+    isLoading,
+    isLoggedIn,
+    dispatch,
+    adminAddress,
+    setMyAddress,
+    setMyAdminAddress,
+    myAdminAddress,
+    myAddress,
+  ]);
 
   const connectWallet = () => {
     dispatch(requestWallet());
@@ -87,7 +111,7 @@ const Header = () => {
               className={
                 isLoggedIn
                   ? "hidden"
-                  : "font-semibold text-gray-200 uppercase text-sm hover:text-gray-400 hover:bg-white bg-primary border-primary p-1 rounded-full tracking-wider pl-2 pr-2 border-2"
+                  : "font-semibold text-gray-500 uppercase text-sm hover:text-gray-400 hover:bg-white bg-teal-200 border-teal-200 p-1 rounded-full tracking-wider pl-2 pr-2 border-2"
               }
             >
               Connect {isLoggedIn}
@@ -105,18 +129,30 @@ const Header = () => {
               Dashboard
             </Link>
           </li>
-          <li className="m-3">
+          {myAdminAddress == myAddress ? (
+            <li className="m-3">
+              <Link
+                to="/admin"
+                className="font-semibold text-gray-500 uppercase text-sm hover:text-gray-400 hover:bg-white bg-teal-200 border-teal-200 p-1 rounded-full tracking-wider pl-2 pr-2 border-2"
+              >
+                Admin
+              </Link>
+            </li>
+          ) : (
+            <></>
+          )}
+          {/* <li className="m-3">
             <Link
               to="/admin"
               className={
-                isLoggedIn
+                adminAddress === isLoggedIn
                   ? "font-semibold text-gray-200 uppercase text-sm hover:text-gray-400 hover:bg-white bg-primary border-primary p-1 rounded-full tracking-wider pl-2 pr-2 border-2"
                   : "hidden"
               }
             >
               Admin
             </Link>
-          </li>
+          </li> */}
         </ul>
       </nav>
     </>

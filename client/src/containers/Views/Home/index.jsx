@@ -52,7 +52,6 @@ const Home = ({ projects }) => {
               <h4 className="text-primary">Upcoming Crowdfunding</h4>
             </div>
 
-            {/* cards go here */}
             <Cards projects={projects} />
           </div>
         </section>

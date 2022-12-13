@@ -5,7 +5,13 @@ import { isConnected } from "../store/auth/authSlice";
 // import { getDonations } from "../store/donations/dSlice";
 
 contract.listenToEvent().on("data", function (e) {
-  configureStore.dispatch(updateProjects(e.returnValues.projects));
+  // const formatedProjects = e.returnValues[0].map((el) => {
+  //   return {
+  //     ...el,
+  //     realizeAmt: this.web3.utils.fromWei(el.realizeAmt, "ether"),
+  //   };
+  // });
+  configureStore.dispatch(updateProjects(e.returnValues[0]));
 });
 if (window.ethereum) {
   window.ethereum.on("accountsChanged", function (accounts) {

@@ -1,27 +1,27 @@
 import Web3 from "web3";
-import abi from "../base.json";
+// import abi from "../base.json";
+import build from "../futfund.json";
 
 class Contract {
   constructor() {
     let web3 = new Web3(window.ethereum || "ws://localhost:8545");
     this.web3 = web3;
     this.contract = new web3.eth.Contract(
-      abi,
-      "0x50210f43a6f526d389eeF83b3F83e545e1a99249"
+      build.abi,
+      build.networks[1337].address
+      // "0x8CB99Fba9A3E8ba7e30B1f8186320ae9917030FE"
     );
   }
 
   async getProjects() {
     try {
       const projects = await this.contract.methods.getProjects().call();
-      const self = this;
       return projects.map((el) => {
         return {
           ...el,
-          expectedAmt: self.web3.utils.fromWei(el.expectedAmt, "ether"),
+          realizeAmt: this.web3.utils.fromWei(el.realizeAmt, "ether"),
         };
       });
-      // return projects;
     } catch (error) {
       throw new Error(error);
     }
@@ -32,7 +32,12 @@ class Contract {
       const donations = await this.contract.methods
         .getMyDonations()
         .call({ from: this.account });
-      return donations;
+      return donations.map((el) => {
+        return {
+          ...el,
+          amount: this.web3.utils.fromWei(el.amount, "ether"),
+        };
+      });
     } catch (error) {
       throw new Error(error);
     }
@@ -41,10 +46,31 @@ class Contract {
   async createDonation(index, value) {
     try {
       await this.requestWallet();
-      await this.contract.methods
-        .createDonation(index)
-        .send({ from: this.account, value });
+      await this.contract.methods.createDonation(index).send({
+        from: this.account,
+        value: this.web3.utils.toWei(value, "ether"),
+      });
       return;
+    } catch (error) {
+      if (error.data) {
+        const data = error.data;
+        const txHash = Object.keys(data)[0]; // TODO improve
+        const reason = data[txHash].reason;
+        throw new Error(reason);
+      }
+      throw error;
+    }
+  }
+
+  async createProject({ name, expectedAmt, startDate, endDate }) {
+    try {
+      console.log("did it?");
+      await this.requestWallet();
+      await this.contract.methods
+        .createProject(name, expectedAmt, startDate, endDate)
+        .send({ from: this.account });
+      await this.getProjects();
+      console.log("e reach here");
     } catch (error) {
       if (error.data) {
         const data = error.data;
@@ -67,6 +93,7 @@ class Contract {
         window.ethereum.on("accountChanged", function (accounts) {
           account = accounts[0];
         });
+        console.log(account, "my address");
       } else {
         throw new Error("Please install Metamask on you browser");
       }
@@ -83,7 +110,7 @@ class Contract {
     return this.contract.events
       .newDonation({ fromBlock: "latest" })
       .on("data", function (event) {
-        self.updateProjects(event.returnValues.projects);
+        self.updateProjects(event.returnValues[0]);
         console.log("passed");
       })
       .on("connected", function (subscriptionId) {
@@ -91,7 +118,7 @@ class Contract {
       })
       .on("changed", function (event) {
         // remove event from local database
-        console.log("passed");
+        console.log("passed changed");
         self.updateProjects(event.returnValues.projects);
       })
       .on("error", function (error, receipt) {
@@ -102,13 +129,17 @@ class Contract {
   }
 
   updateProjects(projects) {
-    return projects;
+    return projects.map((el) => {
+      return {
+        ...el,
+        realizeAmt: this.web3.utils.fromWei(el.realizeAmt, "ether"),
+      };
+    });
   }
 
   async getAdminAddress() {
     try {
-      const address = await this.contract.methods.adminAddress().call();
-      console.log("add", address);
+      const address = await this.contract.methods.getAdminAddress().call();
       return address;
     } catch (error) {
       console.log(error);

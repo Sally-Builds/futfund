@@ -33,7 +33,6 @@ export const getDonations = createAsyncThunk(
   async (data, thunkAPI) => {
     try {
       const donations = await contract.getMyDonations();
-      console.log(donations);
       return donations;
     } catch (error) {
       return thunkAPI.rejectWithValue(error.message);
